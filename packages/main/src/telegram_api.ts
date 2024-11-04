@@ -110,4 +110,24 @@ export default class TelegramApi {
 		});
 		return await fetch(url);
 	}
+
+
+	/**
+	 * Send an callback response to a given botApi
+	 * @param botApi - full URL to the telegram API without slug
+	 * @param data - data to append to the request
+	 */
+	async answerCallback(
+		botApi: string,
+		data: {
+			callback_query_id: number | string;
+			text?: string;
+			show_alert?: boolean;
+			url?: string;
+			cache_time?: number;
+		},
+	) {
+		const url = this.getApiUrl(botApi, 'answerCallbackQuery', data);
+		return await fetch(url);
+	}
 }

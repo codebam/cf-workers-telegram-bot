@@ -1,6 +1,7 @@
 import TelegramInlineQuery from './TelegramInlineQuery.js';
 import TelegramMessage from './TelegramMessage.js';
 import PartialTelegramUpdate from './PartialTelegramUpdate.js';
+import TelegramCallbackQuery from './TelegramCallbackQuery.js';
 
 export default class TelegramUpdate {
 	update_id: number;
@@ -10,7 +11,7 @@ export default class TelegramUpdate {
 	edited_channel_post?: TelegramMessage;
 	inline_query?: TelegramInlineQuery;
 	// chosen_inline_result?: TelegramChosenInlineResult;
-	// callback_query?: TelegramCallbackQuery;
+	callback_query?: TelegramCallbackQuery;
 	// shipping_query?: TelegramShippingQuery;
 	// pre_checkout_query?: TelegramPreCheckoutQuery;
 	// poll?: TelegramPoll;

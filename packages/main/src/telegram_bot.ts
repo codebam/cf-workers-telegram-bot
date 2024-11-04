@@ -71,6 +71,10 @@ export default class TelegramBot {
 							command = ':document';
 							break;
 						}
+						case 'callback': {
+							command = ':callback';
+							break;
+						}
 						default:
 							break;
 					}

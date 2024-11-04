@@ -33,6 +33,8 @@ export default class TelegramExecutionContext {
 			this.update_type = 'inline';
 		} else if (this.update.message?.document) {
 			this.update_type = 'document';
+		} else if (this.update.callback_query?.id) {
+			this.update_type = 'callback';
 		}
 	}
 
