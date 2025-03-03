@@ -24,7 +24,7 @@
 		"esbuild-plugin-babel": "^0.2.3",
 		"esbuild-plugin-glob": "^2.2.3",
 		"eslint": "^9.18.0",
-		"eslint-config-prettier": "^10.0.1",
+		"eslint-config-prettier": "^10.0.2",
 		"globals": "^15.14.0",
 		"prettier": "^3.4.2",
 		"typescript": "^5.7.3",
