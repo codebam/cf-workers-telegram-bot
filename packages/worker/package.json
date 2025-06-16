@@ -17,7 +17,7 @@
 		"@babel/preset-env": "^7.27.2",
 		"@cloudflare/vitest-pool-workers": "^0.8.38",
 		"@cloudflare/workers-types": "^4.20250612.0",
-		"@eslint/js": "^9.28.0",
+		"@eslint/js": "^9.29.0",
 		"@typescript-eslint/eslint-plugin": "^8.34.0",
 		"@typescript-eslint/parser": "^8.34.0",
 		"esbuild": "^0.25.5",
