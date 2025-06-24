@@ -19,7 +19,7 @@
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.27.2",
-		"@cloudflare/vitest-pool-workers": "^0.8.41",
+		"@cloudflare/vitest-pool-workers": "^0.8.45",
 		"@cloudflare/workers-types": "^4.20250620.0",
 		"@eslint/js": "^9.29.0",
 		"@typescript-eslint/eslint-plugin": "^8.34.1",
