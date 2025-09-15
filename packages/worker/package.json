@@ -15,7 +15,7 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"@codebam/cf-workers-telegram-bot": "file:../main",
-		"marked": "^16.0.0"
+		"marked": "^16.3.0"
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.27.2",
