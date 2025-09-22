@@ -24,7 +24,7 @@
 		"@eslint/js": "^9.30.0",
 		"@typescript-eslint/eslint-plugin": "^8.35.0",
 		"@typescript-eslint/parser": "^8.35.0",
-		"esbuild": "^0.25.5",
+		"esbuild": "^0.25.10",
 		"esbuild-plugin-babel": "^0.2.3",
 		"esbuild-plugin-glob": "^2.2.3",
 		"eslint": "^9.30.0",
