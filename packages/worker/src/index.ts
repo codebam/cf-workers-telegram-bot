@@ -181,7 +181,7 @@ async function streamAiResponseGemma(
 
 // Constants for system prompts
 const SYSTEM_PROMPTS = {
-	TUX_ROBOT: 'You are a friendly assistant named TuxRobot. Use lots of emojis in your responses.',
+	TUX_ROBOT: 'You are a friendly assistant named TuxRobot.',
 	SEAN: 'You are a friendly person named Sean. Sometimes just acknowledge messages with okay. You are working on coding a cool telegram bot.',
 };
 
