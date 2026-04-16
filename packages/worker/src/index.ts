@@ -82,7 +82,6 @@ async function streamAiResponse(
 						fullResponse += data.response;
 
 						if (Date.now() - lastUpdate > 5000) {
-							// @ts-expect-error broken bindings
 							await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
 							lastUpdate = Date.now();
 						}
@@ -101,11 +100,13 @@ async function streamAiResponseGemma(
 	env: Environment,
 	model: string,
 	messages: { role: string; content: string }[],
+	max_completion_tokens?: number,
 ): Promise<string> {
 	// @ts-expect-error broken bindings
 	const response = (await env.AI.run(model, {
 		messages,
 		stream: true,
+		max_completion_tokens
 	})) as ReadableStream;
 
 	const reader = response.getReader();
@@ -210,6 +211,7 @@ export default {
 							// @ts-expect-error broken bindings
 							const response = await env.AI.run(AI_MODELS.CODER, { messages });
 
+								// @ts-expect-error broken bindings
 							if ('response' in response) {
 								await bot.reply(
 									await markdownToHtml(
@@ -253,7 +255,7 @@ export default {
 
 							try {
 								console.log('Processing text message:', prompt);
-								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages);
+								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages, 256000);
 
 								if (response) {
 									await bot.reply(await markdownToHtml(response), 'HTML');
@@ -297,6 +299,7 @@ export default {
 									image: [...new Uint8Array(blob)] 
 								});
 
+								// @ts-expect-error broken bindings
 								if ('response' in response && response.response) {
 									await bot.reply(
 										await markdownToHtml(
@@ -344,6 +347,7 @@ export default {
 								// @ts-expect-error broken bindings
 								const response = await env.AI.run(AI_MODELS.LLAMA, { messages, max_tokens: 100 });
 
+								// @ts-expect-error broken bindings
 								if ('response' in response) {
 									await bot.replyInline(
 										(typeof response.response === 'string' ? response.response : ''),
@@ -385,6 +389,7 @@ export default {
 										response = await env.AI.run(AI_MODELS.LLAMA, { messages });
 									}
 
+								// @ts-expect-error broken bindings
 									if ('response' in response && response.response) {
 										await bot.reply(
 											await markdownToHtml(
