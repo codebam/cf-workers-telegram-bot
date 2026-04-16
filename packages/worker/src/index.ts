@@ -81,7 +81,7 @@ async function streamAiResponse(
 					if (data.response) {
 						fullResponse += data.response;
 
-						if (Date.now() - lastUpdate > 5000) {
+						if (Date.now() - lastUpdate > 1000) {
 							await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
 							lastUpdate = Date.now();
 						}
@@ -114,13 +114,15 @@ async function streamAiResponseGemma(
 	const draft_id = Math.floor(Math.random() * 1000000) + 1;
 	let fullResponse = '';
 	let lastUpdate = 0;
+	let buffer = '';
 
 	for (;;) {
 		const { done, value } = await reader.read();
 		if (done) break;
 
-		const chunk = decoder.decode(value);
-		const lines = chunk.split('\n');
+		buffer += decoder.decode(value, { stream: true });
+		let lines = buffer.split('\n');
+		buffer = lines.pop() || '';
 
 		for (const line of lines) {
 			const trimmedLine = line.trim();
@@ -131,13 +133,13 @@ async function streamAiResponseGemma(
 					const data = JSON.parse(trimmedLine.slice(6));
 					
 					// Use the new OpenAI-style path or the legacy response key
-					const content = data.choices?.[0]?.delta?.content || data.response || '';
+					const content = data.choices?.[0]?.delta?.content ?? data.response ?? '';
 
 					if (content) {
 						fullResponse += content;
 
-						// Throttle updates to Telegram (5 seconds is sensible to avoid rate limits)
-						if (Date.now() - lastUpdate > 5000) {
+						// Throttle updates to Telegram (1000ms is sensible to avoid rate limits)
+						if (Date.now() - lastUpdate > 1000) {
 							await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
 							lastUpdate = Date.now();
 						}
@@ -151,7 +153,28 @@ async function streamAiResponseGemma(
 	}
 	
 	// Final update to ensure the message is complete in Telegram
-	await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
+	try {
+		const timeToWait = Math.max(0, 1000 - (Date.now() - lastUpdate));
+		if (timeToWait > 0) {
+			await new Promise(resolve => setTimeout(resolve, timeToWait));
+		}
+		
+		// Also process any leftover buffer just in case
+		if (buffer.trim()) {
+			const trimmedLine = buffer.trim();
+			if (trimmedLine.startsWith('data: ') && trimmedLine !== 'data: [DONE]') {
+				try {
+					const data = JSON.parse(trimmedLine.slice(6));
+					const content = data.choices?.[0]?.delta?.content ?? data.response ?? '';
+					if (content) fullResponse += content;
+				} catch(e) {}
+			}
+		}
+		
+		await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
+	} catch (e) {
+		console.error('Final streamReply failed:', e);
+	}
 	
 	return fullResponse;
 }
@@ -255,7 +278,7 @@ export default {
 
 							try {
 								console.log('Processing text message:', prompt);
-								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages, 131072);
+								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages, 50000);
 
 								if (response) {
 									await bot.reply(await markdownToHtml(response), 'HTML');
@@ -345,7 +368,7 @@ export default {
 
 							try {
 								// @ts-expect-error broken bindings
-								const response = await env.AI.run(AI_MODELS.LLAMA, { messages, max_tokens: 100 });
+								const response = await env.AI.run(AI_MODELS.LLAMA, { messages, max_completion_tokens: 100 });
 
 								// @ts-expect-error broken bindings
 								if ('response' in response) {
