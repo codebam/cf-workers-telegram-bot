@@ -255,7 +255,7 @@ export default {
 
 							try {
 								console.log('Processing text message:', prompt);
-								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages, 256000);
+								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages, 131072);
 
 								if (response) {
 									await bot.reply(await markdownToHtml(response), 'HTML');
