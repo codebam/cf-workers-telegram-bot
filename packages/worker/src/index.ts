@@ -96,6 +96,65 @@ async function streamAiResponse(
 	return fullResponse;
 }
 
+async function streamAiResponseGemma(
+	bot: TelegramExecutionContext,
+	env: Environment,
+	model: string,
+	messages: { role: string; content: string }[],
+): Promise<string> {
+	// @ts-expect-error broken bindings
+	const response = (await env.AI.run(model, {
+		messages,
+		stream: true,
+	})) as ReadableStream;
+
+	const reader = response.getReader();
+	const decoder = new TextDecoder();
+	const draft_id = Math.floor(Math.random() * 1000000) + 1;
+	let fullResponse = '';
+	let lastUpdate = 0;
+
+	for (;;) {
+		const { done, value } = await reader.read();
+		if (done) break;
+
+		const chunk = decoder.decode(value);
+		const lines = chunk.split('\n');
+
+		for (const line of lines) {
+			const trimmedLine = line.trim();
+			if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
+
+			if (trimmedLine.startsWith('data: ')) {
+				try {
+					const data = JSON.parse(trimmedLine.slice(6));
+					
+					// Use the new OpenAI-style path or the legacy response key
+					const content = data.choices?.[0]?.delta?.content || data.response || '';
+
+					if (content) {
+						fullResponse += content;
+
+						// Throttle updates to Telegram (5 seconds is sensible to avoid rate limits)
+						if (Date.now() - lastUpdate > 5000) {
+							await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
+							lastUpdate = Date.now();
+						}
+					}
+				} catch (e) {
+					// We ignore parse errors for lines that aren't valid JSON (like heartbeats)
+					console.error('Error parsing AI stream chunk:', e);
+				}
+			}
+		}
+	}
+	
+	// Final update to ensure the message is complete in Telegram
+	await bot.streamReply(await markdownToHtml(fullResponse), draft_id, 'HTML');
+	
+	return fullResponse;
+}
+
 // Constants for system prompts
 const SYSTEM_PROMPTS = {
 	TUX_ROBOT: 'You are a friendly assistant named TuxRobot. Use lots of emojis in your responses.',
@@ -108,6 +167,7 @@ const AI_MODELS = {
 	CODER: '@hf/thebloke/deepseek-coder-6.7b-instruct-awq',
 	FLUX: '@cf/black-forest-labs/flux-1-schnell',
 	STABLE_DIFFUSION: '@cf/stabilityai/stable-diffusion-xl-base-1.0',
+	GEMMA: '@cf/google/gemma-4-26b-a4b-it',
 };
 
 export default {
@@ -193,7 +253,7 @@ export default {
 
 							try {
 								console.log('Processing text message:', prompt);
-								const response = await streamAiResponse(bot, env, AI_MODELS.LLAMA, messages);
+								const response = await streamAiResponseGemma(bot, env, AI_MODELS.GEMMA, messages);
 
 								if (response) {
 									await bot.reply(await markdownToHtml(response), 'HTML');
@@ -232,7 +292,7 @@ export default {
 								const fileResponse = await bot.getFile(fileId);
 								const blob = await fileResponse.arrayBuffer();
 								// @ts-expect-error broken bindings
-								const response = await env.AI.run(AI_MODELS.LLAMA, { 
+								const response = await env.AI.run(AI_MODELS.GEMMA, { 
 									messages, 
 									image: [...new Uint8Array(blob)] 
 								});
