@@ -48,7 +48,7 @@ steps:
         from_secret: CLOUDFLARE_ACCOUNT_ID
     commands:
       - npm install
-      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
+      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name tux-robot-webapp
     when:
       event: tag
       ref: refs/tags/webapp-v*
