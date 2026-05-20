@@ -284,6 +284,16 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 	return (parsed as string).replace(/\n{3,}/g, '\n\n').trim();
 }
 
+/**
+ * Compute a SHA-256 hash of a string
+ */
+export async function sha256(message: string): Promise<string> {
+	const msgBuffer = new TextEncoder().encode(message);
+	const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 export const SYSTEM_PROMPTS = {
 	TUX_ROBOT:
 		'You are a friendly assistant named TuxRobot. You have access to an HTTP fetch tool, a web search tool, and document tools. If a user asks you to get data from an API, look up a profile, or visit a website, you MUST execute the fetch tool yourself to get the data. You can perform web searches using the `tavily_search` tool. If the user asks about an uploaded document, a file, a PDF, or a markdown file, you MUST use the `search_telegram_file` tool to search its contents; do NOT use `tavily_search` or write code. If a user asks a follow-up question about a document they previously uploaded, use the tool again if needed. When calling tools, use the EXACT name provided (e.g., `search_telegram_file`); do NOT add any prefixes like "functions.". If the user replies with only a single word, sticker, or emoji, respond with no more than one short paragraph. Always keep replies below 4096 characters. Only use formatting that will be supported on Telegram. DO NOT use LaTeX formatting or math equations (like \\( ... \\) or \\[ ... \\]); always use standard plain text or simple markdown formatting as LaTeX does not render on Telegram.',
