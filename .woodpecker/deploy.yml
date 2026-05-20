@@ -47,7 +47,7 @@ steps:
         from_secret: CLOUDFLARE_ACCOUNT_ID
     commands:
       - npm install
-      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp-dev
+      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp --environment preview
     when:
       event: push
       branch: [master, main]
