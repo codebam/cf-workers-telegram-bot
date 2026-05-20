@@ -52,7 +52,7 @@ steps:
       event: push
       branch: [master, main]
 
-  # Deploy Webapp to Production (on v* tags)
+  # Deploy Webapp to Production (on webapp-v* tags)
   deploy_webapp_prod:
     image: node:latest
     environment:
@@ -65,4 +65,4 @@ steps:
       - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
     when:
       event: tag
-      ref: refs/tags/v*
+      ref: refs/tags/webapp-v*
