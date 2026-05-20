@@ -1,4 +1,4 @@
-pipeline:
+steps:
   # Deploy Bot to Development (on push to master/main)
   deploy_bot_dev:
     image: cloudflare/wrangler-action:v3
@@ -41,7 +41,7 @@ pipeline:
         from_secret: TAVILY_API_KEY
     when:
       event: tag
-      target: bot-v*
+      ref: refs/tags/bot-v*
 
   # Deploy Webapp to Development (on push to master/main)
   deploy_webapp_dev:
@@ -69,4 +69,4 @@ pipeline:
       command: pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
     when:
       event: tag
-      target: v*
+      ref: refs/tags/v*
