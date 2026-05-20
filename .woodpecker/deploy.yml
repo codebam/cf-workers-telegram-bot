@@ -37,20 +37,6 @@ steps:
       event: tag
       ref: refs/tags/bot-v*
 
-  # Deploy Webapp to Development (on push to master/main)
-  deploy_webapp_dev:
-    image: node:latest
-    environment:
-      CLOUDFLARE_API_TOKEN:
-        from_secret: CLOUDFLARE_API_TOKEN
-      CLOUDFLARE_ACCOUNT_ID:
-        from_secret: CLOUDFLARE_ACCOUNT_ID
-    commands:
-      - npm install
-      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp --branch preview
-    when:
-      event: push
-      branch: [master, main]
 
   # Deploy Webapp to Production (on webapp-v* tags)
   deploy_webapp_prod:
