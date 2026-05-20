@@ -254,7 +254,7 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 		const text = renderer.parser.parse(tokens).trim();
 		return text
 			.split('\n')
-			.map((line) => `>${line}`)
+			.map((line) => `> ${line}`)
 			.join('\n');
 	};
 
