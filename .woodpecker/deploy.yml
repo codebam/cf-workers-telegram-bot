@@ -1,0 +1,36 @@
+pipeline:
+  # Deploy Bot to Production
+  deploy_bot_prod:
+    image: cloudflare/wrangler-action:v3
+    settings:
+      apiToken:
+        from_secret: CLOUDFLARE_API_TOKEN
+      accountId:
+        from_secret: CLOUDFLARE_ACCOUNT_ID
+      workingDirectory: bot
+      environment: production
+      secrets: |
+        SECRET_TELEGRAM_API_TOKEN
+        TAVILY_API_KEY
+    environment:
+      SECRET_TELEGRAM_API_TOKEN:
+        from_secret: SECRET_TELEGRAM_API_TOKEN
+      TAVILY_API_KEY:
+        from_secret: TAVILY_API_KEY
+    when:
+      event: tag
+      target: bot-v*
+
+  # Deploy Webapp to Production
+  deploy_webapp_prod:
+    image: cloudflare/wrangler-action:v3
+    settings:
+      apiToken:
+        from_secret: CLOUDFLARE_API_TOKEN
+      accountId:
+        from_secret: CLOUDFLARE_ACCOUNT_ID
+      workingDirectory: webapp
+      command: pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
+    when:
+      event: tag
+      target: v*

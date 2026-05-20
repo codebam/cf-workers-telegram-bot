@@ -5,6 +5,8 @@ CF Workers Telegram Bot
 <br/>
 </h3>
 
+> 🚀 **This project has moved to [Codeberg](https://codeberg.org/codebam/cf-workers-telegram-bot)**
+
 <p align="center">
 <a href="https://github.com/codebam/cf-workers-telegram-bot/stargazers">  <img src="https://img.shields.io/github/stars/codebam/cf-workers-telegram-bot?style=for-the-badge&logo=starship&color=111111&logoColor=ffffff&labelColor=000000" alt="GitHub stars"/></a>
 <a href="https://github.com/codebam/cf-workers-telegram-bot/issues">
