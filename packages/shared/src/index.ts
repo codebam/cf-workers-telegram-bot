@@ -387,6 +387,7 @@ export interface Task {
 	systemPrompt?: string;
 	telegramToken?: string;
 	token?: string;
+	authProof?: string;
 	tools?: Tool[];
 	stream?: boolean;
 	geminiParts?: GeminiPart[];
