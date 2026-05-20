@@ -333,6 +333,7 @@ export interface Environment {
 	TAVILY_API_KEY?: string;
 	Sandbox: DurableObjectNamespace<Sandbox>;
 	VECTORIZE?: VectorizeIndex;
+	ENVIRONMENT?: string;
 }
 
 export interface Tool {
