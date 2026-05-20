@@ -12,8 +12,6 @@ CF Workers Telegram Bot
 <a href="https://github.com/codebam/cf-workers-telegram-bot">  <img src="https://img.shields.io/github/forks/codebam/cf-workers-telegram-bot?style=for-the-badge&logo=git&color=111111&logoColor=ffffff&labelColor=000000" alt="GitHub forks"/></a>
 </p>
 
-![screenshot of cf-workers-telegram-bot](https://raw.githubusercontent.com/codebam/cf-workers-telegram-bot/master/assets/screenshot.png)
-
 A monorepo containing a Telegram Bot and a Svelte web application, both running on Cloudflare Workers and Pages.
 
 ## Structure
