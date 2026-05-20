@@ -1,72 +1,68 @@
 steps:
   # Deploy Bot to Development (on push to master/main)
   deploy_bot_dev:
-    image: cloudflare/wrangler-action:v3
-    settings:
-      apiToken:
-        from_secret: CLOUDFLARE_API_TOKEN
-      accountId:
-        from_secret: CLOUDFLARE_ACCOUNT_ID
-      workingDirectory: bot
-      environment: dev
-      secrets: |
-        SECRET_TELEGRAM_API_TOKEN
-        TAVILY_API_KEY
+    image: node:latest
     environment:
+      CLOUDFLARE_API_TOKEN:
+        from_secret: CLOUDFLARE_API_TOKEN
+      CLOUDFLARE_ACCOUNT_ID:
+        from_secret: CLOUDFLARE_ACCOUNT_ID
       SECRET_TELEGRAM_API_TOKEN:
         from_secret: SECRET_TELEGRAM_API_TOKEN_DEV
       TAVILY_API_KEY:
         from_secret: TAVILY_API_KEY
+    commands:
+      - npm install
+      - cd bot && npx wrangler deploy --env dev --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY}
     when:
       event: push
       branch: [master, main]
 
   # Deploy Bot to Production (on bot-v* tags)
   deploy_bot_prod:
-    image: cloudflare/wrangler-action:v3
-    settings:
-      apiToken:
-        from_secret: CLOUDFLARE_API_TOKEN
-      accountId:
-        from_secret: CLOUDFLARE_ACCOUNT_ID
-      workingDirectory: bot
-      environment: production
-      secrets: |
-        SECRET_TELEGRAM_API_TOKEN
-        TAVILY_API_KEY
+    image: node:latest
     environment:
+      CLOUDFLARE_API_TOKEN:
+        from_secret: CLOUDFLARE_API_TOKEN
+      CLOUDFLARE_ACCOUNT_ID:
+        from_secret: CLOUDFLARE_ACCOUNT_ID
       SECRET_TELEGRAM_API_TOKEN:
         from_secret: SECRET_TELEGRAM_API_TOKEN
       TAVILY_API_KEY:
         from_secret: TAVILY_API_KEY
+    commands:
+      - npm install
+      - cd bot && npx wrangler deploy --env production --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY}
     when:
       event: tag
       ref: refs/tags/bot-v*
 
   # Deploy Webapp to Development (on push to master/main)
   deploy_webapp_dev:
-    image: cloudflare/wrangler-action:v3
-    settings:
-      apiToken:
+    image: node:latest
+    environment:
+      CLOUDFLARE_API_TOKEN:
         from_secret: CLOUDFLARE_API_TOKEN
-      accountId:
+      CLOUDFLARE_ACCOUNT_ID:
         from_secret: CLOUDFLARE_ACCOUNT_ID
-      workingDirectory: webapp
-      command: pages deploy .svelte-kit/cloudflare --project-name telegram-webapp-dev
+    commands:
+      - npm install
+      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp-dev
     when:
       event: push
       branch: [master, main]
 
   # Deploy Webapp to Production (on v* tags)
   deploy_webapp_prod:
-    image: cloudflare/wrangler-action:v3
-    settings:
-      apiToken:
+    image: node:latest
+    environment:
+      CLOUDFLARE_API_TOKEN:
         from_secret: CLOUDFLARE_API_TOKEN
-      accountId:
+      CLOUDFLARE_ACCOUNT_ID:
         from_secret: CLOUDFLARE_ACCOUNT_ID
-      workingDirectory: webapp
-      command: pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
+    commands:
+      - npm install
+      - cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp
     when:
       event: tag
       ref: refs/tags/v*
