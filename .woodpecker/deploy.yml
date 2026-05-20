@@ -1,7 +1,6 @@
 steps:
   # Deploy Bot to Development (on push to master/main)
   deploy_bot_dev:
-    group: development
     image: node:latest
     environment:
       CLOUDFLARE_API_TOKEN:
@@ -21,7 +20,6 @@ steps:
 
   # Deploy Bot to Production (on bot-v* tags)
   deploy_bot_prod:
-    group: production
     image: node:latest
     environment:
       CLOUDFLARE_API_TOKEN:
@@ -41,7 +39,6 @@ steps:
 
   # Deploy Webapp to Development (on push to master/main)
   deploy_webapp_dev:
-    group: development
     image: node:latest
     environment:
       CLOUDFLARE_API_TOKEN:
@@ -57,7 +54,6 @@ steps:
 
   # Deploy Webapp to Production (on v* tags)
   deploy_webapp_prod:
-    group: production
     image: node:latest
     environment:
       CLOUDFLARE_API_TOKEN:
