@@ -7,13 +7,6 @@ CF Workers Telegram Bot
 
 > 🚀 **This project has moved to [Codeberg](https://codeberg.org/codebam/cf-workers-telegram-bot)**
 
-<p align="center">
-<a href="https://github.com/codebam/cf-workers-telegram-bot/stargazers">  <img src="https://img.shields.io/github/stars/codebam/cf-workers-telegram-bot?style=for-the-badge&logo=starship&color=111111&logoColor=ffffff&labelColor=000000" alt="GitHub stars"/></a>
-<a href="https://github.com/codebam/cf-workers-telegram-bot/issues">
-  <img src="https://img.shields.io/github/issues/codebam/cf-workers-telegram-bot?style=for-the-badge&logo=gitbook&color=111111&logoColor=ffffff&labelColor=000000" alt="GitHub issues"/></a>
-<a href="https://github.com/codebam/cf-workers-telegram-bot">  <img src="https://img.shields.io/github/forks/codebam/cf-workers-telegram-bot?style=for-the-badge&logo=git&color=111111&logoColor=ffffff&labelColor=000000" alt="GitHub forks"/></a>
-</p>
-
 A monorepo containing a Telegram Bot and a Svelte web application, both running on Cloudflare Workers and Pages.
 
 ## Structure
