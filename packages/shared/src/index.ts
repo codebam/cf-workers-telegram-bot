@@ -107,7 +107,7 @@ export async function markdownToHtml(s: string): Promise<string> {
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
 			const prefix = ordered
-				? `${start !== '' && start !== undefined ? Number(start) + i : i + 1}. `
+				? `${start !== '' && start !== undefined ? Number(start) + i : i + 1}\\. `
 				: '• ';
 			result += `${prefix}${renderer.listitem(item)}\n`;
 		}
@@ -194,13 +194,12 @@ export async function markdownToHtml(s: string): Promise<string> {
 export function sanitizeMarkdownV2(text: string, isInsideLink = false): string {
 	// Standard MarkdownV2 characters that MUST be escaped outside of code/pre
 	// First, we unescape any existing escapes to avoid double-escaping
-	// We keep the full list of potentially escaped characters here for robustness
 	let unescaped = text.replace(/\\([_*[\]()~`>#+\-=|{}.!\\])/g, '$1');
-	
-	// We only escape characters that are truly likely to cause parsing issues or are essential markup
-	// Reduced list: _ * [ ] ~ ` \ |
-	let escaped = unescaped.replace(/([_*[\]~`\\|])/g, '\\$1');
-	
+
+	// Telegram's MarkdownV2 is extremely strict: ANY of these characters MUST be escaped
+	// if they are not part of a valid entity. To be safe, we escape them all.
+	let escaped = unescaped.replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
+
 	if (isInsideLink) {
 		// Inside links, additional characters need escaping to avoid breaking the link syntax
 		escaped = escaped.replace(/([()])/g, '\\$1');
@@ -230,7 +229,7 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
 			const prefix = ordered
-				? `${start !== '' && start !== undefined ? Number(start) + i : i + 1}. `
+				? `${start !== '' && start !== undefined ? Number(start) + i : i + 1}\\. `
 				: '• ';
 			result += `${prefix}${renderer.listitem(item)}\n`;
 		}
