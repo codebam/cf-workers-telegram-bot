@@ -72,7 +72,7 @@ export async function getBalance(userId: number | string, kv: KVNamespace): Prom
 	const balanceKey = `balance:${String(userId)}`;
 	const balance = await kv.get<number>(balanceKey, 'json');
 	if (balance === null) {
-		const defaultBalance = 200;
+		const defaultBalance = 100;
 		await kv.put(balanceKey, JSON.stringify(defaultBalance));
 		return defaultBalance;
 	}
@@ -307,29 +307,29 @@ export const AVAILABLE_MODELS: Record<
 	string,
 	{ id: string; cost: number; supportsTools?: boolean; supportsVision?: boolean }
 > = {
-	gemma4: { id: '@cf/google/gemma-4-26b-a4b-it', cost: 10, supportsTools: true, supportsVision: true },
-	'google/gemini-3-flash': { id: 'google/gemini-3-flash', cost: 15, supportsTools: true, supportsVision: true },
+	gemma4: { id: '@cf/google/gemma-4-26b-a4b-it', cost: 8, supportsTools: true, supportsVision: true },
+	'google/gemini-3-flash': { id: 'google/gemini-3-flash', cost: 25, supportsTools: true, supportsVision: true },
 	'google/gemini-3.1-flash-lite': {
 		id: 'google/gemini-3.1-flash-lite',
-		cost: 10,
+		cost: 12,
 		supportsTools: true,
 		supportsVision: true
 	},
-	'google/gemini-3.1-pro': { id: 'google/gemini-3.1-pro', cost: 80, supportsTools: true, supportsVision: true },
+	'google/gemini-3.1-pro': { id: 'google/gemini-3.1-pro', cost: 150, supportsTools: true, supportsVision: true },
 	'llama-3.2-vision': {
 		id: '@cf/meta/llama-3.2-11b-vision-instruct',
-		cost: 10,
+		cost: 8,
 		supportsTools: true,
 		supportsVision: true
 	},
-	'kimi-k2.6': { id: '@cf/moonshotai/kimi-k2.6', cost: 40, supportsTools: true, supportsVision: true },
-	'glm-4.7-flash': { id: '@cf/zai-org/glm-4.7-flash', cost: 10, supportsTools: true, supportsVision: true },
+	'kimi-k2.6': { id: '@cf/moonshotai/kimi-k2.6', cost: 45, supportsTools: true, supportsVision: true },
+	'glm-4.7-flash': { id: '@cf/zai-org/glm-4.7-flash', cost: 5, supportsTools: true, supportsVision: true },
 	'deepseek-r1-32b': {
 		id: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',
-		cost: 60,
+		cost: 80,
 		supportsTools: false
 	},
-	'nemotron-3': { id: '@cf/nvidia/nemotron-3-120b-a12b', cost: 100, supportsTools: true }
+	'nemotron-3': { id: '@cf/nvidia/nemotron-3-120b-a12b', cost: 20, supportsTools: true }
 };
 
 export interface Environment {
