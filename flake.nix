@@ -26,6 +26,7 @@
           		efm-langserver
           		nil
           		nodejs_latest
+          		bun
           		typescript-language-server
           		prettier
           		vscode-langservers-extracted
