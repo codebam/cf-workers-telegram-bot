@@ -23,7 +23,6 @@
 	},
 	"devDependencies": {
 		"@types/node": "^25.9.1",
-		"node-linux-x64": "^24.16.0",
 		"npm-check-updates": "^22.2.0",
 		"typescript": "^6.0.3",
 		"wrangler": "^4.94.0"
