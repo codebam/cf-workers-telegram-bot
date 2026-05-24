@@ -10,7 +10,7 @@
 		"packages/*"
 	],
 	"scripts": {
-		"build": "npm run build --workspace=webapp && npm run build --workspace=bot",
+		"build": "bun run --filter webapp build && bun run --filter bot build",
 		"ncu": "npx npm-check-updates -u --root",
 		"ncu:interactive": "npx npm-check-updates -i --root",
 		"prepare": "./setup_hooks.sh"
