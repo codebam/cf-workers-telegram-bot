@@ -1,7 +1,7 @@
 steps:
   # Deploy Bot to Development (on push to master/main)
   deploy_bot_dev:
-    image: node:latest
+    image: oven/bun:latest
     environment:
       CLOUDFLARE_API_TOKEN:
         from_secret: CLOUDFLARE_API_TOKEN
@@ -11,17 +11,18 @@ steps:
         from_secret: SECRET_TELEGRAM_API_TOKEN_DEV
       TAVILY_API_KEY:
         from_secret: TAVILY_API_KEY
+      WRANGLER_LOG: debug
+      WRANGLER_SEND_METRICS: "false"
     commands:
-      - npm install -g bun
       - bun install
-      - cd bot && npx wrangler deploy --env dev --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
+      - cd bot && bun run wrangler deploy --env dev --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
     when:
       event: push
       branch: [master, main]
 
   # Deploy Bot to Production (on bot-v* tags)
   deploy_bot_prod:
-    image: node:latest
+    image: oven/bun:latest
     environment:
       CLOUDFLARE_API_TOKEN:
         from_secret: CLOUDFLARE_API_TOKEN
@@ -31,10 +32,11 @@ steps:
         from_secret: SECRET_TELEGRAM_API_TOKEN
       TAVILY_API_KEY:
         from_secret: TAVILY_API_KEY
+      WRANGLER_LOG: debug
+      WRANGLER_SEND_METRICS: "false"
     commands:
-      - npm install -g bun
       - bun install
-      - cd bot && npx wrangler deploy --env production --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
+      - cd bot && bun run wrangler deploy --env production --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
     when:
       event: tag
       ref: refs/tags/bot-v*
@@ -42,16 +44,17 @@ steps:
 
   # Deploy Webapp to Production (on webapp-v* tags)
   deploy_webapp_prod:
-    image: node:latest
+    image: oven/bun:latest
     environment:
       CLOUDFLARE_API_TOKEN:
         from_secret: CLOUDFLARE_API_TOKEN
       CLOUDFLARE_ACCOUNT_ID:
         from_secret: CLOUDFLARE_ACCOUNT_ID
+      WRANGLER_LOG: debug
+      WRANGLER_SEND_METRICS: "false"
     commands:
-      - npm install -g bun
       - bun install
-      - cd webapp && bun run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp --branch main
+      - cd webapp && bun run build && bun run wrangler pages deploy .svelte-kit/cloudflare --project-name telegram-webapp --branch main
     when:
       event: tag
       ref: refs/tags/webapp-v*
