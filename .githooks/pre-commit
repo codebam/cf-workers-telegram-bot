@@ -10,6 +10,6 @@ echo "🔍 Running pre-commit checks..."
 
 # 1. Type checking / Build (Full project)
 echo "🏗️  Running full build check..."
-npm run build
+bun run build
 
 echo "✅ All pre-commit checks passed!"

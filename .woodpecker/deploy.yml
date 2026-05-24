@@ -13,7 +13,6 @@ steps:
         from_secret: TAVILY_API_KEY
       WRANGLER_SEND_METRICS: "false"
     commands:
-      - rm -rf .git
       - bun install
       - cd bot && bun run build && bunx wrangler-native-bun deploy --no-bundle --env dev --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
     when:
@@ -34,7 +33,6 @@ steps:
         from_secret: TAVILY_API_KEY
       WRANGLER_SEND_METRICS: "false"
     commands:
-      - rm -rf .git
       - bun install
       - cd bot && bun run build && bunx wrangler-native-bun deploy --no-bundle --env production --var SECRET_TELEGRAM_API_TOKEN:$${SECRET_TELEGRAM_API_TOKEN} --var TAVILY_API_KEY:$${TAVILY_API_KEY} --var COMMIT_SHA:$CI_COMMIT_SHA
     when:
@@ -52,7 +50,6 @@ steps:
         from_secret: CLOUDFLARE_ACCOUNT_ID
       WRANGLER_SEND_METRICS: "false"
     commands:
-      - rm -rf .git
       - bun install
       - cd webapp && bun run build && bunx wrangler-native-bun pages deploy .svelte-kit/cloudflare --project-name telegram-webapp --branch main
     when:

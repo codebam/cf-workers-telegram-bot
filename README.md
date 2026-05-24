@@ -28,7 +28,7 @@ This is a monorepo containing:
 2. **Install dependencies**:
 
    ```sh
-   npm install
+   bun install
    ```
 
 3. **Configure the bot**:
@@ -39,13 +39,13 @@ This is a monorepo containing:
 
    ```sh
    cd bot
-   npx wrangler secret put SECRET_TELEGRAM_API_TOKEN
+   bunx wrangler-native-bun secret put SECRET_TELEGRAM_API_TOKEN
    ```
 
 5. **Deploy**:
 
    ```sh
-   npm run deploy
+   bun run deploy
    ```
 
 For more information on deploying grammY bots, see the [grammY deployment documentation](https://grammy.dev/guide/deployment).
@@ -56,9 +56,9 @@ The web app is a SvelteKit project designed to be deployed to Cloudflare Pages.
 
 ```sh
 cd webapp
-npm install
-npm run build
-npx wrangler pages deploy .svelte-kit/cloudflare
+bun install
+bun run build
+bunx wrangler-native-bun pages deploy .svelte-kit/cloudflare
 ```
 
 ## Development
@@ -74,7 +74,7 @@ make clean   # Clean build artifacts
 
 1. **Install dependencies**:
    ```sh
-   npm install
+   bun install
    ```
 
 2. **Set up Git hooks**:

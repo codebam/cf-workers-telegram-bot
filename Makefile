@@ -9,4 +9,4 @@ clean:
 
 deploy:
 	bun run --cwd bot deploy
-	bun run --cwd webapp build && bunx wrangler pages deploy .svelte-kit/cloudflare
+	bun run --cwd webapp build && bunx wrangler-native-bun pages deploy .svelte-kit/cloudflare

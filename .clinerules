@@ -39,7 +39,7 @@ Before proposing any change as complete or claiming it works, you MUST verify th
 
 To optimize token usage, speed, and accuracy on this host environment, use specialized Nix tools instead of generic high-overhead commands:
 - **Codebase Mapping**: Instead of exploring files manually, run:
-  `nix run nixpkgs#repomix -- --include "src/**/*.ts,wrangler.json"` to bundle project context.
+  `nix run nixpkgs#repomix -- --include "src/**/*.ts,wrangler.toml"` to bundle project context.
 - **Exploration & Listing**: Use `nix run nixpkgs#fd` or `nix run nixpkgs#tree` rather than `ls -R` or deep manual searches.
 - **Log Processing**: Never `cat` or read raw logs larger than 50 lines. Filter them using `awk`, `sed`, or `jq` via Nix before ingesting.
 - **Symbol Extraction**: Use `nix run nixpkgs#ctags -- -x` to find symbol definitions instead of manually opening source files.
