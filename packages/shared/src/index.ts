@@ -344,6 +344,7 @@ export interface Environment {
 	Sandbox: DurableObjectNamespace<Sandbox>;
 	VECTORIZE?: VectorizeIndex;
 	ENVIRONMENT?: string;
+	COMMIT_SHA?: string;
 }
 
 export interface Tool {
