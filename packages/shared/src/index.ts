@@ -615,3 +615,32 @@ export async function verifyTelegramLogin(initData: string, botToken: string): P
 
 	return signatureHex === hash;
 }
+
+export interface Transaction {
+	timestamp: string;
+	amount: number;
+	type: 'charge' | 'refund' | 'load';
+	model?: string;
+	taskType?: string;
+	newBalance: number;
+	description?: string;
+}
+
+export async function logTransaction(
+	userId: number | string,
+	kv: KVNamespace,
+	tx: Omit<Transaction, 'timestamp'>
+): Promise<void> {
+	if (!kv) return;
+	const txKey = `transactions:${String(userId)}`;
+	const existing = await kv.get<Transaction[]>(txKey, 'json');
+	const history = existing ?? [];
+	const newTx: Transaction = {
+		...tx,
+		timestamp: new Date().toISOString(),
+	};
+	history.push(newTx);
+	const trimmed = history.slice(-50);
+	await kv.put(txKey, JSON.stringify(trimmed));
+}
+
