@@ -334,6 +334,7 @@ export const AVAILABLE_MODELS: Record<
 
 export interface Environment {
 	SECRET_TELEGRAM_API_TOKEN: string;
+	SECRET_TELEGRAM_WEBHOOK?: string;
 	GITHUB_TOKEN?: string;
 	AI: Ai;
 	R2: R2Bucket;
