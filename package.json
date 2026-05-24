@@ -22,10 +22,10 @@
 		"url": "git+https://github.com/codebam/cf-workers-telegram-bot.git"
 	},
 	"devDependencies": {
-		"@types/node": "^25.8.0",
+		"@types/node": "^25.9.1",
 		"node-linux-x64": "^24.16.0",
 		"npm-check-updates": "^22.2.0",
 		"typescript": "^6.0.3",
-		"wrangler": "^4.93.0"
+		"wrangler": "^4.94.0"
 	}
 }
