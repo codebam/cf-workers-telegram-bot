@@ -10,9 +10,9 @@
 		"packages/*"
 	],
 	"scripts": {
-		"build": "bun run --cwd webapp build && bun run --cwd bot build",
-		"ncu": "bunx npm-check-updates -u --root",
-		"ncu:interactive": "bunx npm-check-updates -i --root",
+		"build": "npm run build --workspace=webapp && npm run build --workspace=bot",
+		"ncu": "npx npm-check-updates -u --root",
+		"ncu:interactive": "npx npm-check-updates -i --root",
 		"prepare": "./setup_hooks.sh"
 	},
 	"author": "codebam",
