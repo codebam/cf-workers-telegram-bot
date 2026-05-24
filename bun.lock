@@ -26,6 +26,7 @@
         "@grammyjs/stream": "^1.0.1",
         "@grammyjs/types": "^3.27.3",
         "grammy": "^1.43.0",
+        "hono": "^4.6.0",
         "jszip": "^3.10.1",
         "unpdf": "^1.6.2",
       },
