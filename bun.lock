@@ -6,6 +6,7 @@
       "name": "@codebam/cf-workers-telegram-bot",
       "devDependencies": {
         "@types/node": "^25.8.0",
+        "node-linux-x64": "^24.16.0",
         "npm-check-updates": "^22.2.0",
         "typescript": "^6.0.3",
         "wrangler": "^4.93.0",
@@ -1044,6 +1045,8 @@
     "natural-compare": ["natural-compare@1.4.0", "", {}, "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw=="],
 
     "node-fetch": ["node-fetch@2.7.0", "", { "dependencies": { "whatwg-url": "^5.0.0" }, "peerDependencies": { "encoding": "^0.1.0" }, "optionalPeers": ["encoding"] }, "sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A=="],
+
+    "node-linux-x64": ["node-linux-x64@24.16.0", "", { "os": "linux", "cpu": "x64", "bin": { "node": "bin/node" } }, "sha512-de1hk23Hh0J8mmY2PVLgBfJkQV4enyhmZXrz/mFu+uRnSIE7xLVQtG5LHsjo8lcj8AVqponK9WGCviKJjyz3dw=="],
 
     "node-releases": ["node-releases@2.0.44", "", {}, "sha512-5WUyunoPMsvvEhS8AxHtRzP+oA8UCkJ7YRxatWKjngndhDGLiqEVAQKWjFAiAiuL8zMRGzGSJxFnLetoa43qGQ=="],
 
