@@ -346,6 +346,7 @@ export interface Environment {
 	VECTORIZE?: VectorizeIndex;
 	ENVIRONMENT?: string;
 	COMMIT_SHA?: string;
+	FLAGS?: Flagship;
 }
 
 export interface Tool {
