@@ -258,6 +258,89 @@ export function convertMarkdownTablesToAscii(text: string): string {
 		.join('');
 }
 
+export interface RichBlock {
+	type: string;
+	[key: string]: any;
+}
+
+export function markdownToRichBlocks(markdownText: string): RichBlock[] {
+	const tokens = marked.lexer(markdownText);
+	const blocks: RichBlock[] = [];
+
+	for (const token of tokens) {
+		if (token.type === 'heading') {
+			blocks.push({
+				type: 'heading',
+				text: token.text,
+				size: Math.min(6, Math.max(1, token.depth)),
+			});
+		} else if (token.type === 'paragraph') {
+			blocks.push({
+				type: 'paragraph',
+				text: token.text,
+			});
+		} else if (token.type === 'space') {
+			continue;
+		} else if (token.type === 'hr') {
+			blocks.push({ type: 'divider' });
+		} else if (token.type === 'code') {
+			blocks.push({
+				type: 'preformatted',
+				text: token.text,
+				language: token.lang || '',
+			});
+		} else if (token.type === 'blockquote') {
+			blocks.push({
+				type: 'block_quotation',
+				text: token.text,
+			});
+		} else if (token.type === 'list') {
+			const items = (token.items || []).map((item: any) => ({
+				blocks: [{ type: 'paragraph', text: item.text }],
+			}));
+			blocks.push({
+				type: 'list',
+				items,
+				is_ordered: token.ordered || false,
+			});
+		} else if (token.type === 'table') {
+			const headerCells = (token.header || []).map((h: any) => ({
+				text: h.text,
+				is_header: true,
+				align: h.align || 'left',
+			}));
+			const rows = (token.rows || []).map((row: any) =>
+				row.map((cell: any) => ({
+					text: cell.text,
+					align: cell.align || 'left',
+				}))
+			);
+			blocks.push({
+				type: 'table',
+				cells: [headerCells, ...rows],
+				is_bordered: true,
+				is_striped: true,
+			});
+		} else {
+			if ('raw' in token && token.raw.trim()) {
+				blocks.push({
+					type: 'paragraph',
+					text: token.raw.trim(),
+				});
+			}
+		}
+	}
+
+	if (blocks.length === 0 && markdownText.trim()) {
+		blocks.push({
+			type: 'paragraph',
+			text: markdownText.trim(),
+		});
+	}
+
+	return blocks;
+}
+
 export async function markdownToMarkdownV2(s: string): Promise<string> {
 	const renderer = new marked.Renderer();
 
