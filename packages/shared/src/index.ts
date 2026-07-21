@@ -285,34 +285,36 @@ export function markdownToRichBlocks(markdownText: string): RichBlock[] {
 			blocks.push({ type: 'divider' });
 		} else if (token.type === 'code') {
 			blocks.push({
-				type: 'preformatted',
+				type: 'pre',
 				text: token.text,
-				language: token.lang || '',
+				language: token.lang || undefined,
 			});
 		} else if (token.type === 'blockquote') {
 			blocks.push({
-				type: 'block_quotation',
-				text: token.text,
+				type: 'blockquote',
+				blocks: [{ type: 'paragraph', text: token.text }],
 			});
 		} else if (token.type === 'list') {
 			const items = (token.items || []).map((item: any) => ({
+				label: item.text,
 				blocks: [{ type: 'paragraph', text: item.text }],
 			}));
 			blocks.push({
 				type: 'list',
 				items,
-				is_ordered: token.ordered || false,
 			});
 		} else if (token.type === 'table') {
 			const headerCells = (token.header || []).map((h: any) => ({
 				text: h.text,
 				is_header: true,
 				align: h.align || 'left',
+				valign: 'top',
 			}));
 			const rows = (token.rows || []).map((row: any) =>
 				row.map((cell: any) => ({
 					text: cell.text,
 					align: cell.align || 'left',
+					valign: 'top',
 				}))
 			);
 			blocks.push({
@@ -377,9 +379,12 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 	renderer.table = ({ header, rows }) => {
 		const headerCells = header.map((c) => renderer.parser.parseInline(c.tokens).trim());
 		const bodyRows = rows.map((r) => r.map((c) => renderer.parser.parseInline(c.tokens).trim()));
-		const tableAscii = formatTableAsAscii(headerCells, bodyRows);
-		const escapedTable = tableAscii.replace(/[`\\]/g, '\\$&');
-		return `\`\`\`text\n${escapedTable}\n\`\`\`\n\n`;
+		const colCount = Math.max(headerCells.length, ...bodyRows.map((r) => r.length));
+		if (colCount === 0) return '';
+		const headerLine = '| ' + Array.from({ length: colCount }, (_, i) => headerCells[i] || '').join(' | ') + ' |';
+		const sepLine = '| ' + new Array(colCount).fill('---').join(' | ') + ' |';
+		const dataLines = bodyRows.map((r) => '| ' + Array.from({ length: colCount }, (_, i) => r[i] || '').join(' | ') + ' |');
+		return [headerLine, sepLine, ...dataLines].join('\n') + '\n\n';
 	};
 
 	renderer.strong = ({ tokens }) => `*${renderer.parser.parseInline(tokens)}*`;
