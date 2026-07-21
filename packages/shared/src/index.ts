@@ -287,9 +287,12 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 	renderer.table = ({ header, rows }) => {
 		const headerCells = header.map((c) => renderer.parser.parseInline(c.tokens).trim());
 		const bodyRows = rows.map((r) => r.map((c) => renderer.parser.parseInline(c.tokens).trim()));
-		const tableAscii = formatTableAsAscii(headerCells, bodyRows);
-		const escapedTable = tableAscii.replace(/[`\\]/g, '\\$&');
-		return `\`\`\`text\n${escapedTable}\n\`\`\`\n\n`;
+		const colCount = Math.max(headerCells.length, ...bodyRows.map((r) => r.length));
+		if (colCount === 0) return '';
+		const headerLine = '| ' + Array.from({ length: colCount }, (_, i) => headerCells[i] || '').join(' | ') + ' |';
+		const sepLine = '| ' + new Array(colCount).fill('---').join(' | ') + ' |';
+		const dataLines = bodyRows.map((r) => '| ' + Array.from({ length: colCount }, (_, i) => r[i] || '').join(' | ') + ' |');
+		return [headerLine, sepLine, ...dataLines].join('\n') + '\n\n';
 	};
 
 	renderer.strong = ({ tokens }) => `*${renderer.parser.parseInline(tokens)}*`;
