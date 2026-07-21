@@ -207,6 +207,50 @@ export function sanitizeMarkdownV2(text: string, isInsideLink = false): string {
 	return escaped;
 }
 
+export function formatTableAsAscii(header: string[], rows: string[][]): string {
+	const colCount = Math.max(header.length, ...rows.map((r) => r.length));
+	if (colCount === 0) return '';
+
+	const colWidths = new Array(colCount).fill(0);
+	for (let c = 0; c < colCount; c++) {
+		colWidths[c] = Math.max(
+			(header[c] || '').length,
+			...rows.map((r) => (r[c] || '').length)
+		);
+	}
+
+	const pad = (text: string, width: number) => text + ' '.repeat(Math.max(0, width - text.length));
+
+	const topBorder = '┌' + colWidths.map((w) => '─'.repeat(w + 2)).join('┬') + '┐';
+	const headerRow = '│ ' + Array.from({ length: colCount }, (_, i) => pad(header[i] || '', colWidths[i])).join(' │ ') + ' │';
+	const midBorder = '├' + colWidths.map((w) => '─'.repeat(w + 2)).join('┼') + '┤';
+	const dataRows = rows.map(
+		(r) => '│ ' + Array.from({ length: colCount }, (_, i) => pad(r[i] || '', colWidths[i])).join(' │ ') + ' │'
+	);
+	const botBorder = '└' + colWidths.map((w) => '─'.repeat(w + 2)).join('┴') + '┘';
+
+	return [topBorder, headerRow, midBorder, ...dataRows, botBorder].join('\n');
+}
+
+export function convertMarkdownTablesToAscii(text: string): string {
+	const tableRegex = /((?:\|[^\n]+\|\r?\n){2,}(?:\|[^\n]+\|\r?\n?)*)/g;
+	return text.replace(tableRegex, (match) => {
+		const lines = match.trim().split(/\r?\n/).filter((line) => line.trim().startsWith('|'));
+		if (lines.length < 2) return match;
+
+		const isSeparator = /^\|(?:\s*:?-+:?\s*\|)+$/.test(lines[1].trim());
+		if (!isSeparator) return match;
+
+		const parseRow = (row: string) => row.split('|').slice(1, -1).map((c) => c.trim());
+
+		const header = parseRow(lines[0]);
+		const dataRows = lines.slice(2).map(parseRow);
+
+		const asciiTable = formatTableAsAscii(header, dataRows);
+		return `\`\`\`text\n${asciiTable}\n\`\`\`\n`;
+	});
+}
+
 export async function markdownToMarkdownV2(s: string): Promise<string> {
 	const renderer = new marked.Renderer();
 
@@ -238,6 +282,14 @@ export async function markdownToMarkdownV2(s: string): Promise<string> {
 
 	renderer.listitem = (item) => {
 		return renderer.parser.parse(item.tokens).trim();
+	};
+
+	renderer.table = ({ header, rows }) => {
+		const headerCells = header.map((c) => renderer.parser.parseInline(c.tokens).trim());
+		const bodyRows = rows.map((r) => r.map((c) => renderer.parser.parseInline(c.tokens).trim()));
+		const tableAscii = formatTableAsAscii(headerCells, bodyRows);
+		const escapedTable = tableAscii.replace(/[`\\]/g, '\\$&');
+		return `\`\`\`text\n${escapedTable}\n\`\`\`\n\n`;
 	};
 
 	renderer.strong = ({ tokens }) => `*${renderer.parser.parseInline(tokens)}*`;
