@@ -233,22 +233,29 @@ export function formatTableAsAscii(header: string[], rows: string[][]): string {
 }
 
 export function convertMarkdownTablesToAscii(text: string): string {
-	const tableRegex = /((?:\|[^\n]+\|\r?\n){2,}(?:\|[^\n]+\|\r?\n?)*)/g;
-	return text.replace(tableRegex, (match) => {
-		const lines = match.trim().split(/\r?\n/).filter((line) => line.trim().startsWith('|'));
-		if (lines.length < 2) return match;
+	const parts = text.split(/(```[\s\S]*?```)/g);
+	return parts
+		.map((part, index) => {
+			if (index % 2 === 1) return part;
 
-		const isSeparator = /^\|(?:\s*:?-+:?\s*\|)+$/.test(lines[1].trim());
-		if (!isSeparator) return match;
+			const tableRegex = /((?:^[ \t]*\|[^\n]+\|[ \t]*\r?\n){2,}(?:[ \t]*\|[^\n]+\|[ \t]*\r?\n?)*)/gm;
+			return part.replace(tableRegex, (match) => {
+				const lines = match.trim().split(/\r?\n/).filter((line) => line.trim().startsWith('|'));
+				if (lines.length < 2) return match;
 
-		const parseRow = (row: string) => row.split('|').slice(1, -1).map((c) => c.trim());
+				const isSeparator = /^\|(?:\s*:?-+:?\s*\|)+$/.test(lines[1].trim());
+				if (!isSeparator) return match;
 
-		const header = parseRow(lines[0]);
-		const dataRows = lines.slice(2).map(parseRow);
+				const parseRow = (row: string) => row.split('|').slice(1, -1).map((c) => c.trim());
 
-		const asciiTable = formatTableAsAscii(header, dataRows);
-		return `\`\`\`text\n${asciiTable}\n\`\`\`\n`;
-	});
+				const header = parseRow(lines[0]);
+				const dataRows = lines.slice(2).map(parseRow);
+
+				const asciiTable = formatTableAsAscii(header, dataRows);
+				return `\n\`\`\`text\n${asciiTable}\n\`\`\`\n\n`;
+			});
+		})
+		.join('');
 }
 
 export async function markdownToMarkdownV2(s: string): Promise<string> {
