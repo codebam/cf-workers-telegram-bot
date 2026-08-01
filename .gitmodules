@@ -1,6 +1,6 @@
 [submodule "webapp"]
 	path = webapp
-	url = https://codeberg.org/codebam/telegram-webapp.git
+	url = https://github.com/codebam/tux-robot-webapp.git
 [submodule "bot"]
 	path = bot
-	url = https://codeberg.org/codebam/telegram-bot.git
+	url = https://github.com/codebam/telegram-bot.git

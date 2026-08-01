@@ -11,6 +11,8 @@
 	],
 	"scripts": {
 		"build": "bun run --filter webapp build && bun run --filter bot build",
+		"deploy": "bun run --filter bot deploy && bun run --filter webapp deploy",
+		"docs": "node scripts/build-docs.mjs",
 		"ncu": "npx npm-check-updates -u --root",
 		"ncu:interactive": "npx npm-check-updates -i --root",
 		"prepare": "./setup_hooks.sh"
@@ -25,7 +27,7 @@
 		"@types/node": "^26.1.1",
 		"npm-check-updates": "^22.2.9",
 		"typescript": "^7.0.2",
-		"wrangler-native-bun": "^1.0.4"
+		"wrangler": "^4.94.0"
 	},
 	"allowScripts": {}
 }

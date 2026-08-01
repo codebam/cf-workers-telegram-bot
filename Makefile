@@ -1,4 +1,4 @@
-.PHONY: build clean deploy
+.PHONY: build clean deploy deploy-bot deploy-webapp
 
 build:
 	bun run build
@@ -7,6 +7,11 @@ clean:
 	rm -rf webapp/.svelte-kit
 	rm -rf bot/dist
 
-deploy:
+deploy-bot:
 	bun run --cwd bot deploy
-	bun run --cwd webapp build && bunx wrangler-native-bun pages deploy .svelte-kit/cloudflare
+
+deploy-webapp:
+	bun run --cwd webapp build
+	bun run --cwd webapp deploy
+
+deploy: deploy-bot deploy-webapp

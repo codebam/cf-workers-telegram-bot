@@ -62,8 +62,18 @@ export class HistoryManager {
 	}
 }
 
+/** Credits granted to a user the first time we see them. */
+export const DEFAULT_NEW_USER_BALANCE = 200;
+
 /**
- * Get the balance for a user, initializing it if it doesn't exist
+ * Read the balance mirror for a user.
+ *
+ * This is a *read-only* view. The authoritative balance lives in the
+ * `UserAccount` durable object, which mirrors every mutation back into KV so
+ * that display paths (dashboard, SSE, /balance) stay cheap. Never write the
+ * result of this function back to KV — that read-modify-write is exactly the
+ * race the durable object exists to avoid.
+ *
  * @param userId - the telegram user ID | string
  * @param kv - the KV namespace
  * @returns the user's balance
@@ -71,12 +81,7 @@ export class HistoryManager {
 export async function getBalance(userId: number | string, kv: KVNamespace): Promise<number> {
 	const balanceKey = `balance:${String(userId)}`;
 	const balance = await kv.get<number>(balanceKey, 'json');
-	if (balance === null) {
-		const defaultBalance = 100;
-		await kv.put(balanceKey, JSON.stringify(defaultBalance));
-		return defaultBalance;
-	}
-	return balance;
+	return balance ?? DEFAULT_NEW_USER_BALANCE;
 }
 
 export async function markdownToHtml(s: string): Promise<string> {
@@ -450,6 +455,18 @@ export const SYSTEM_PROMPTS = {
 
 export const DEFAULT_MODEL = 'glm-4.7-flash';
 
+/** Extra Stars charged on top of the model cost for Whisper transcription. */
+export const VOICE_SURCHARGE_STARS = 20;
+
+/** Stars charged per web app file upload. */
+export const UPLOAD_COST_STARS = 5;
+
+/** Cost of one `/photo` image generation. */
+export const PHOTO_COST_STARS = 100;
+
+/** Hard cap on history entries accepted from an untrusted request body. */
+export const MAX_HISTORY_MESSAGES = 40;
+
 export const AVAILABLE_MODELS: Record<
 	string,
 	{ id: string; cost: number; supportsTools?: boolean; supportsVision?: boolean }
@@ -479,9 +496,25 @@ export const AVAILABLE_MODELS: Record<
 	'nemotron-3': { id: '@cf/nvidia/nemotron-3-120b-a12b', cost: 20, supportsTools: true }
 };
 
+/** Look up a model entry by its provider-facing id (e.g. `@cf/...`). */
+export function modelConfigById(id: string | undefined) {
+	if (!id) return undefined;
+	return Object.values(AVAILABLE_MODELS).find((cfg) => cfg.id === id);
+}
+
+/** Human-readable, always-current list of vision-capable models and prices. */
+export function visionModelList(): string {
+	return Object.entries(AVAILABLE_MODELS)
+		.filter(([, cfg]) => cfg.supportsVision)
+		.map(([name, cfg]) => `- \`/model ${name}\` (${String(cfg.cost)} Stars)`)
+		.join('\n');
+}
+
 export interface Environment {
 	SECRET_TELEGRAM_API_TOKEN: string;
 	SECRET_TELEGRAM_WEBHOOK?: string;
+	/** Guards the `GET /?command=set` webhook registration endpoint. */
+	SECRET_ADMIN_TOKEN?: string;
 	GITHUB_TOKEN?: string;
 	AI: Ai;
 	R2: R2Bucket;
@@ -490,10 +523,20 @@ export interface Environment {
 	STREAM_WORKFLOW: any;
 	TAVILY_API_KEY?: string;
 	Sandbox: DurableObjectNamespace<Sandbox>;
+	/** Authoritative, serialized per-user balance ledger. */
+	USER_ACCOUNT: DurableObjectNamespace;
 	VECTORIZE?: VectorizeIndex;
 	ENVIRONMENT?: string;
 	COMMIT_SHA?: string;
 	FLAGS?: Flagship;
+}
+
+/** Result of an atomic balance mutation on the `UserAccount` durable object. */
+export interface AccountResult {
+	ok: boolean;
+	balance: number;
+	/** Present when `ok` is false because the user could not afford the charge. */
+	shortfall?: number;
 }
 
 export interface Tool {
@@ -526,7 +569,10 @@ export interface Task {
 	guestQueryId?: string;
 	businessConnectionId?: string;
 	prompt: string;
+	/** Owner of the conversation history (may be a `business:...` composite). */
 	userId?: number | string;
+	/** Numeric Telegram id whose balance is debited. Always set by the server. */
+	billingUserId?: number;
 	senderId?: number;
 	chatId?: string;
 	threadId?: number;
@@ -540,6 +586,11 @@ export interface Task {
 	tools?: Tool[];
 	stream?: boolean;
 	geminiParts?: GeminiPart[];
+	/**
+	 * Stars already debited for this task. Used to refund the user if every
+	 * workflow attempt fails.
+	 */
+	chargedAmount?: number;
 }
 
 export interface RawToolCall {
@@ -693,18 +744,58 @@ export function extractReasoning(obj: ExtractInput): string {
 	return '';
 }
 
-export async function verifyTelegramWebAppData(
-	initData: string,
-	botToken: string
-): Promise<boolean> {
-	const params = new URLSearchParams(initData);
-	const hash = params.get('hash');
-	params.delete('hash');
+/**
+ * How long a Telegram auth proof stays usable. Mini App `initData` is refreshed
+ * every time the app is opened; Login Widget data is held in a cookie for the
+ * same window, so an intercepted proof stops working after this long instead of
+ * being valid forever.
+ */
+export const AUTH_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-	const sortedParams = Array.from(params.entries())
+/** Compare two hex strings without leaking their contents through timing. */
+function timingSafeEqualHex(a: string | null, b: string | null): boolean {
+	if (!a || !b || a.length !== b.length) return false;
+	let diff = 0;
+	for (let i = 0; i < a.length; i++) {
+		diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+	}
+	return diff === 0;
+}
+
+function checkAuthDate(params: URLSearchParams, maxAgeSeconds: number): boolean {
+	const authDate = Number(params.get('auth_date'));
+	if (!Number.isFinite(authDate) || authDate <= 0) return false;
+	const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+	// Reject stale proofs, and reject proofs dated more than 5 minutes into the
+	// future (clock skew allowance) so a forged auth_date can't extend validity.
+	return ageSeconds <= maxAgeSeconds && ageSeconds >= -300;
+}
+
+function sortedDataCheckString(params: URLSearchParams): string {
+	return Array.from(params.entries())
 		.sort(([a], [b]) => a.localeCompare(b))
 		.map(([key, value]) => `${key}=${value}`)
 		.join('\n');
+}
+
+function toHex(buffer: ArrayBuffer): string {
+	return Array.from(new Uint8Array(buffer))
+		.map((b) => b.toString(16).padStart(2, '0'))
+		.join('');
+}
+
+export async function verifyTelegramWebAppData(
+	initData: string,
+	botToken: string,
+	maxAgeSeconds = AUTH_MAX_AGE_SECONDS
+): Promise<boolean> {
+	if (!initData || !botToken) return false;
+	const params = new URLSearchParams(initData);
+	const hash = params.get('hash');
+	if (!hash) return false;
+	params.delete('hash');
+
+	if (!checkAuthDate(params, maxAgeSeconds)) return false;
 
 	const encoder = new TextEncoder();
 	const secretKey = await crypto.subtle.importKey(
@@ -725,24 +816,27 @@ export async function verifyTelegramWebAppData(
 		['sign']
 	);
 
-	const signature = await crypto.subtle.sign('HMAC', signatureKey, encoder.encode(sortedParams));
+	const signature = await crypto.subtle.sign(
+		'HMAC',
+		signatureKey,
+		encoder.encode(sortedDataCheckString(params))
+	);
 
-	const signatureHex = Array.from(new Uint8Array(signature))
-		.map((b) => b.toString(16).padStart(2, '0'))
-		.join('');
-
-	return signatureHex === hash;
+	return timingSafeEqualHex(toHex(signature), hash);
 }
 
-export async function verifyTelegramLogin(initData: string, botToken: string): Promise<boolean> {
+export async function verifyTelegramLogin(
+	initData: string,
+	botToken: string,
+	maxAgeSeconds = AUTH_MAX_AGE_SECONDS
+): Promise<boolean> {
+	if (!initData || !botToken) return false;
 	const params = new URLSearchParams(initData);
 	const hash = params.get('hash');
+	if (!hash) return false;
 	params.delete('hash');
 
-	const sortedParams = Array.from(params.entries())
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([key, value]) => `${key}=${value}`)
-		.join('\n');
+	if (!checkAuthDate(params, maxAgeSeconds)) return false;
 
 	const encoder = new TextEncoder();
 	const tokenHash = await crypto.subtle.digest('SHA-256', encoder.encode(botToken));
@@ -755,13 +849,49 @@ export async function verifyTelegramLogin(initData: string, botToken: string): P
 		['sign']
 	);
 
-	const signature = await crypto.subtle.sign('HMAC', signatureKey, encoder.encode(sortedParams));
+	const signature = await crypto.subtle.sign(
+		'HMAC',
+		signatureKey,
+		encoder.encode(sortedDataCheckString(params))
+	);
 
-	const signatureHex = Array.from(new Uint8Array(signature))
-		.map((b) => b.toString(16).padStart(2, '0'))
-		.join('');
+	return timingSafeEqualHex(toHex(signature), hash);
+}
 
-	return signatureHex === hash;
+/**
+ * Extract the Telegram user ID carried inside an auth proof. Does *not*
+ * validate the proof — always pair it with {@link verifyTelegramAuth}.
+ */
+export function userIdFromAuthProof(authProof: string): number | null {
+	try {
+		const params = new URLSearchParams(authProof);
+		const userStr = params.get('user');
+		const raw = userStr ? (JSON.parse(userStr) as { id?: unknown }).id : params.get('id');
+		const id = Number(raw);
+		return Number.isSafeInteger(id) && id > 0 ? id : null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Verify a Telegram auth proof (Mini App `initData` or Login Widget query
+ * string) and return the authenticated user ID.
+ *
+ * This is the only supported way to establish identity. Callers must use the
+ * returned ID and never a client-supplied one.
+ */
+export async function verifyTelegramAuth(
+	authProof: string | null | undefined,
+	botToken: string,
+	maxAgeSeconds = AUTH_MAX_AGE_SECONDS
+): Promise<{ valid: boolean; userId: number | null }> {
+	if (!authProof) return { valid: false, userId: null };
+	const isInitData = await verifyTelegramWebAppData(authProof, botToken, maxAgeSeconds);
+	const isLogin = !isInitData && (await verifyTelegramLogin(authProof, botToken, maxAgeSeconds));
+	if (!isInitData && !isLogin) return { valid: false, userId: null };
+	const userId = userIdFromAuthProof(authProof);
+	return { valid: userId !== null, userId };
 }
 
 export interface Transaction {
