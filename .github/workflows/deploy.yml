@@ -64,7 +64,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/bot-v')
     needs: check
     runs-on: ubuntu-latest
-    environment: production
+    environment: prod
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,7 +92,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/webapp-v')
     needs: check
     runs-on: ubuntu-latest
-    environment: production
+    environment: prod
     steps:
       - uses: actions/checkout@v4
         with:
