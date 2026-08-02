@@ -221,7 +221,7 @@ const html = `<!doctype html>
       Cloudflare Workers, Workers AI, Durable Objects and Pages.
     </p>
     <div class="cta">
-      <a class="btn primary" href="https://t.me/tux_robot_bot">Open in Telegram</a>
+      <a class="btn primary" href="https://t.me/TuxRobot">Open in Telegram</a>
       <a class="btn" href="${REPO}">Source on GitHub</a>
     </div>
   </div>
