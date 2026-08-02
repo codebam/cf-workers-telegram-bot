@@ -27,7 +27,7 @@ This is a monorepo containing:
 2. **Install dependencies**:
 
    ```sh
-   bun install
+   npm install
    ```
 
 3. **Set up Git hooks** (runs the full build on every commit):
@@ -39,7 +39,7 @@ This is a monorepo containing:
 4. **Authenticate wrangler**:
 
    ```sh
-   bunx wrangler login
+   npx wrangler login
    ```
 
 ## Deployment
@@ -54,10 +54,10 @@ This is a monorepo containing:
 
    ```sh
    cd bot
-   bunx wrangler secret put SECRET_TELEGRAM_API_TOKEN --env production
-   bunx wrangler secret put SECRET_TELEGRAM_WEBHOOK  --env production   # webhook shared secret
-   bunx wrangler secret put SECRET_ADMIN_TOKEN       --env production   # guards GET /?command=set
-   bunx wrangler secret put TAVILY_API_KEY           --env production   # optional, web search
+   npx wrangler secret put SECRET_TELEGRAM_API_TOKEN --env production
+   npx wrangler secret put SECRET_TELEGRAM_WEBHOOK  --env production   # webhook shared secret
+   npx wrangler secret put SECRET_ADMIN_TOKEN       --env production   # guards GET /?command=set
+   npx wrangler secret put TAVILY_API_KEY           --env production   # optional, web search
    ```
 
    Repeat with `--env dev` for the development worker.
@@ -66,7 +66,7 @@ This is a monorepo containing:
 
    ```sh
    make deploy-bot
-   # or: cd bot && bunx wrangler deploy --env production
+   # or: cd bot && npx wrangler deploy --env production
    ```
 
 4. **Register the webhook** (once per deploy target):
@@ -83,7 +83,7 @@ The web app is a SvelteKit project deployed to Cloudflare Pages.
 
 ```sh
 make deploy-webapp
-# or: cd webapp && bun run build && bunx wrangler pages deploy .svelte-kit/cloudflare
+# or: cd webapp && npm run build && npx wrangler pages deploy .svelte-kit/cloudflare
 ```
 
 ### Everything
@@ -98,8 +98,8 @@ make deploy
 make build   # Build all projects
 make clean   # Clean build artifacts
 
-bun run --cwd bot start   # local worker via wrangler dev
-bun run --cwd webapp dev  # local webapp via vite
+npm run start --workspace bot   # local worker via wrangler dev
+npm run dev --workspace webapp  # local webapp via vite
 ```
 
 ## Continuous Deployment

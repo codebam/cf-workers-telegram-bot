@@ -1,17 +1,17 @@
 .PHONY: build clean deploy deploy-bot deploy-webapp
 
 build:
-	bun run build
+	npm run build
 
 clean:
 	rm -rf webapp/.svelte-kit
 	rm -rf bot/dist
 
 deploy-bot:
-	bun run --cwd bot deploy
+	npm run deploy --workspace bot
 
 deploy-webapp:
-	bun run --cwd webapp build
-	bun run --cwd webapp deploy
+	npm run build --workspace webapp
+	npm run deploy --workspace webapp
 
 deploy: deploy-bot deploy-webapp
