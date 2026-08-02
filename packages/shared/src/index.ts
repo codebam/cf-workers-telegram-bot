@@ -481,49 +481,62 @@ export const MAX_HISTORY_MESSAGES = 40;
 /**
  * Model catalogue.
  *
- * `cost` is in Telegram Stars and is derived from real provider token prices
- * rather than picked by feel — see docs/pricing notes below. A Star nets us
- * roughly $0.009 after the mobile app-store cut, and a tool-using turn in this
- * bot costs about 6k input / 800 output tokens once the multi-turn tool loop is
- * accounted for. Prices are set at ~40x that break-even, rounded, which leaves
- * headroom for long contexts and retries while keeping the ladder proportional
- * to what each model actually costs.
+ * `cost` is in Telegram Stars, derived from the provider token prices reported
+ * by the Workers AI model API rather than picked by feel. A Star nets us about
+ * $0.009 after the mobile app-store cut, and a tool-using turn costs roughly
+ * 6k input / 800 output tokens once the multi-turn tool loop is counted. Every
+ * entry is priced at ~40x that break-even, which keeps the ladder proportional
+ * to real cost while leaving headroom for long contexts and retries.
  *
- * `supportsTools` and `supportsVision` are VERIFIED against the live API, not
- * assumed. Getting these wrong is not cosmetic: a model wrongly flagged as
- * vision-capable never triggers the fallback in chargeStars, so the user's
- * photo silently fails. Both flags fail safe — when unsure, leave them off.
+ * `supportsTools` / `supportsVision` are checked against the live API and
+ * cross-referenced with the catalogue's own `function_calling` / `vision`
+ * properties. Two gotchas make naive probing lie:
+ *   - reasoning models spend the token budget thinking, so a small max_tokens
+ *     returns empty content and looks like "unsupported";
+ *   - some vision models reject images below a minimum pixel size.
+ * Both produce false negatives. Verify with a real image and a generous budget.
  */
 export const AVAILABLE_MODELS: Record<
 	string,
 	{ id: string; cost: number; supportsTools?: boolean; supportsVision?: boolean }
 > = {
-	// Cheap default. Emits real tool calls; explicitly NOT multimodal
-	// ("GLM-4.7-Flash is not a multimodal model").
+	// --- budget tier -------------------------------------------------------
+	// Cheapest thing that can still call tools ($0.017/$0.112 per 1M).
+	'granite-4-micro': { id: '@cf/ibm-granite/granite-4.0-h-micro', cost: 1, supportsTools: true },
+	// Default. Fast and cheap, but explicitly NOT multimodal — the API rejects
+	// images with "GLM-4.7-Flash is not a multimodal model".
 	'glm-4.7-flash': { id: '@cf/zai-org/glm-4.7-flash', cost: 3, supportsTools: true },
-	// Accepts a tools array but never emits a tool call, so don't advertise it.
-	gemma4: { id: '@cf/google/gemma-4-26b-a4b-it', cost: 4 },
-	// Budget vision. Same story on tools: accepted, never used.
-	'llama-3.2-vision': { id: '@cf/meta/llama-3.2-11b-vision-instruct', cost: 4, supportsVision: true },
-	// The all-rounder: confirmed tool calls *and* image understanding, which is
-	// why it is also the automatic fallback for images.
+	// Best value multimodal: tools + vision for $0.10/$0.30, which is why it is
+	// also the automatic fallback when someone sends a photo.
+	gemma4: { id: '@cf/google/gemma-4-26b-a4b-it', cost: 4, supportsTools: true, supportsVision: true },
+	'gpt-oss-20b': { id: '@cf/openai/gpt-oss-20b', cost: 6, supportsTools: true },
+
+	// --- mid tier ----------------------------------------------------------
 	'llama-4-scout': {
 		id: '@cf/meta/llama-4-scout-17b-16e-instruct',
 		cost: 10,
 		supportsTools: true,
 		supportsVision: true
 	},
-	'gpt-oss-120b': { id: '@cf/openai/gpt-oss-120b', cost: 12, supportsTools: true },
 	'google/gemini-3-flash': {
 		id: 'google/gemini-3-flash',
 		cost: 12,
 		supportsTools: true,
 		supportsVision: true
 	},
-	'nemotron-3': { id: '@cf/nvidia/nemotron-3-120b-a12b', cost: 18, supportsTools: true },
-	'kimi-k2.6': { id: '@cf/moonshotai/kimi-k2.6', cost: 40, supportsTools: true },
+	'gpt-oss-120b': { id: '@cf/openai/gpt-oss-120b', cost: 12, supportsTools: true },
+
+	// --- flagship tier -----------------------------------------------------
+	'kimi-k2.6': { id: '@cf/moonshotai/kimi-k2.6', cost: 40, supportsTools: true, supportsVision: true },
+	// Same price as k2.6, tuned for code.
+	'kimi-k2.7-code': {
+		id: '@cf/moonshotai/kimi-k2.7-code',
+		cost: 40,
+		supportsTools: true,
+		supportsVision: true
+	},
 	'glm-5.2': { id: '@cf/zai-org/glm-5.2', cost: 55, supportsTools: true },
-	// Priciest by a wide margin ($2/$12 per 1M at list), and priced to match.
+	// Dearest by a distance ($2/$12 per 1M at list) and priced to match.
 	'google/gemini-3.1-pro': {
 		id: 'google/gemini-3.1-pro',
 		cost: 100,
@@ -533,11 +546,11 @@ export const AVAILABLE_MODELS: Record<
 };
 
 /**
- * Model used when the user's choice cannot handle an image. Must support both
- * vision and tools, and must have a known price — hence a first-party model
- * rather than a third-party one whose rate Cloudflare does not publish.
+ * Model used when the user's choice cannot handle an image. Must do both vision
+ * and tool calls, and should be cheap — a user who sends a photo to a text-only
+ * model should not be pushed onto an expensive tier.
  */
-export const VISION_FALLBACK_MODEL = 'llama-4-scout';
+export const VISION_FALLBACK_MODEL = 'gemma4';
 
 /** Look up a model entry by its provider-facing id (e.g. `@cf/...`). */
 export function modelConfigById(id: string | undefined) {
