@@ -1,2 +1,0 @@
-[test]
-pathIgnorePatterns = ["**/*.svelte.spec.ts"]
