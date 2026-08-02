@@ -351,14 +351,14 @@ ${endpoints}
   <h2 id="selfhost">Self-hosting</h2>
   <pre><code>git clone --recursive ${REPO}.git
 cd cf-workers-telegram-bot
-bun install
-bunx wrangler login</code></pre>
+npm install
+npx wrangler login</code></pre>
   <p>Set the bot's secrets, then deploy:</p>
   <pre><code>cd bot
-bunx wrangler secret put SECRET_TELEGRAM_API_TOKEN --env production
-bunx wrangler secret put SECRET_TELEGRAM_WEBHOOK  --env production
-bunx wrangler secret put SECRET_ADMIN_TOKEN       --env production
-bunx wrangler secret put TAVILY_API_KEY           --env production
+npx wrangler secret put SECRET_TELEGRAM_API_TOKEN --env production
+npx wrangler secret put SECRET_TELEGRAM_WEBHOOK  --env production
+npx wrangler secret put SECRET_ADMIN_TOKEN       --env production
+npx wrangler secret put TAVILY_API_KEY           --env production
 
 make deploy</code></pre>
   <p>Finally, point Telegram at your worker:</p>

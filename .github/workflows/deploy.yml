@@ -23,14 +23,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+          node-version: 22
+      - run: npm install
       - name: Typecheck shared
-        run: bun run --cwd packages/shared check
+        run: npm run check --workspace packages/shared
       - name: Typecheck bot
-        run: bun run --cwd bot check
+        run: npm run check --workspace bot
 
   deploy_bot_dev:
     if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
