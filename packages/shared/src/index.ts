@@ -525,6 +525,8 @@ export const AVAILABLE_MODELS: Record<
 		supportsVision: true
 	},
 	'gpt-oss-120b': { id: '@cf/openai/gpt-oss-120b', cost: 12, supportsTools: true },
+	// 27B multimodal with tools + vision for $0.45/$3.20 per 1M.
+	'qwen3.8': { id: '@cf/qwen/qwen3.8-27b', cost: 20, supportsTools: true, supportsVision: true },
 
 	// --- flagship tier -----------------------------------------------------
 	'kimi-k2.6': { id: '@cf/moonshotai/kimi-k2.6', cost: 40, supportsTools: true, supportsVision: true },
