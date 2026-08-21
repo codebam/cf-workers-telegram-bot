@@ -31,6 +31,12 @@ jobs:
         run: npm run check --workspace packages/shared
       - name: Typecheck bot
         run: npm run check --workspace bot
+      - name: Typecheck webapp
+        run: npm run check --workspace webapp
+      - name: Lint webapp
+        run: npm run lint --workspace webapp
+      - name: Test webapp (server)
+        run: npm run test --workspace webapp
 
   deploy_bot_dev:
     if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
