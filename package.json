@@ -26,7 +26,7 @@
 	"devDependencies": {
 		"@types/node": "^26.1.1",
 		"npm-check-updates": "^22.2.9",
-		"typescript": "^7.0.2",
+		"typescript": "^6.0.3",
 		"wrangler": "^4.94.0"
 	},
 	"allowScripts": {}
