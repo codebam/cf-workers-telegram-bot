@@ -7,6 +7,10 @@ CF Workers Telegram Bot
 
 A monorepo containing a Telegram Bot and a Svelte web application, both running on Cloudflare Workers and Pages.
 
+<p align="center">
+  <img src="assets/mockup.webp" width="960" alt="Tux Robot holding a conversation in Telegram" />
+</p>
+
 ## Structure
 
 This is a monorepo containing:
