@@ -1,4 +1,4 @@
-.PHONY: build clean deploy deploy-bot deploy-webapp
+.PHONY: build clean deploy deploy-bot deploy-webapp typecheck lint
 
 build:
 	npm run build
@@ -6,6 +6,12 @@ build:
 clean:
 	rm -rf webapp/.svelte-kit
 	rm -rf bot/dist
+
+typecheck:
+	npm run typecheck
+
+lint:
+	cd webapp && npm run lint
 
 deploy-bot:
 	npm run deploy --workspace bot

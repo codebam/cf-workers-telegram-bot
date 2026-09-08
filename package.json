@@ -15,6 +15,7 @@
 		"docs": "node scripts/build-docs.mjs",
 		"ncu": "npx npm-check-updates -u --root",
 		"ncu:interactive": "npx npm-check-updates -i --root",
+		"typecheck": "npm run check --workspaces --if-present",
 		"prepare": "./setup_hooks.sh"
 	},
 	"author": "codebam",
@@ -24,10 +25,10 @@
 		"url": "git+https://github.com/codebam/cf-workers-telegram-bot.git"
 	},
 	"devDependencies": {
-		"@types/node": "^26.1.1",
+		"@types/node": "^26.5.0",
 		"npm-check-updates": "^22.2.9",
 		"typescript": "^6.0.3",
-		"wrangler": "^4.94.0"
+		"wrangler": "^4.130.0"
 	},
 	"allowScripts": {}
 }
