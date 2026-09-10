@@ -11,11 +11,11 @@
 		".": "./src/index.ts"
 	},
 	"devDependencies": {
-		"@cloudflare/sandbox": "^0.10.1",
-		"@cloudflare/workers-types": "^4.20260519.1",
+		"@cloudflare/sandbox": "^0.12.9",
+		"@cloudflare/workers-types": "^5.20260908.1",
 		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"marked": "^18.0.3"
+		"marked": "^18.0.12"
 	}
 }
