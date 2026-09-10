@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       - name: Typecheck shared
         run: npm run check --workspace packages/shared
       - name: Typecheck bot
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       - name: Deploy bot (dev)
         working-directory: bot
         env:
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       - name: Deploy bot (production)
         working-directory: bot
         env:
@@ -106,7 +106,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       - name: Build webapp
         working-directory: webapp
         run: npm run build
